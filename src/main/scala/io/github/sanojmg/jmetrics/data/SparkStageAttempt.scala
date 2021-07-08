@@ -4,6 +4,7 @@ import cats.effect.IO
 import cats.implicits._
 import frameless.TypedDataset
 import io.circe.{Decoder, HCursor}
+import io.github.sanojmg.jmetrics.config.AppEnv
 import io.github.sanojmg.jmetrics.http.HttpClient
 import io.github.sanojmg.jmetrics.util.CatsUtil.putStrLn
 import org.apache.spark.sql.SparkSession
@@ -17,11 +18,22 @@ case class SparkStageAttempt(stageId: Int,
                              numTasks: Int,
                              numCompleteTasks: Int,
                              numFailedTasks: Int,
-                             firstTaskLaunchedTime: String,
-                             completionTime: String,
+                             firstTaskLaunchedTime: Option[String],
+                             completionTime: Option[String],
                              tasks: Seq[StageTask]
                             )
 
+case class SparkStageAttemptTask(stageId: Int,
+                             attemptId: Int,
+                             name: String,
+                             status: String,
+                             numTasks: Int,
+                             numCompleteTasks: Int,
+                             numFailedTasks: Int,
+                             firstTaskLaunchedTime: Option[String],
+                             completionTime: Option[String],
+                             task: StageTask
+                            )
 
 object SparkStageAttempt {
 
@@ -36,17 +48,19 @@ object SparkStageAttempt {
       c.downField("numTasks").as[Int],
       c.downField("numCompleteTasks").as[Int],
       c.downField("numFailedTasks").as[Int],
-      c.downField("firstTaskLaunchedTime").as[String],
-      c.downField("completionTime").as[String],
+      c.downField("firstTaskLaunchedTime").as[Option[String]],
+      c.downField("completionTime").as[Option[String]],
       c.downField("tasks").as[Map[String, StageTask]].map(_.values.toSeq)
     ) mapN SparkStageAttempt.apply
   }
 
   val stageDecoder: EntityDecoder[IO, SparkStage] = jsonOf[IO, SparkStage]
 
-  def getStage(urlStr: String, appId: String, stageId: String) (implicit spark: SparkSession): IO[TypedDataset[SparkStageAttempt]] = {
+  def getStage(env: AppEnv, stageId: Int): IO[TypedDataset[SparkStageAttempt]] = {
 
-    val stageUri = HttpClient.endPoint(urlStr) / "applications" / appId / "stages" / stageId
+    implicit val spark = env.sparkSession
+
+    val stageUri = HttpClient.endPoint(env.appConf.restEndpoint) / "applications" / env.appConf.appId / "stages" / stageId.toString
 
     val stg: IO[SparkStage] = for {
       _        <- putStrLn ("Stage URL: " + stageUri)

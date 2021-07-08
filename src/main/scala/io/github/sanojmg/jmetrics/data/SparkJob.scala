@@ -4,6 +4,7 @@ import cats.effect.IO
 import cats.implicits._
 import frameless.TypedDataset
 import io.circe.{Decoder, HCursor}
+import io.github.sanojmg.jmetrics.config.AppEnv
 import io.github.sanojmg.jmetrics.http.HttpClient
 import io.github.sanojmg.jmetrics.util.CatsUtil.putStrLn
 import org.apache.spark.sql.SparkSession
@@ -32,9 +33,11 @@ object SparkJob {
 
   val jobEntityDecoder: EntityDecoder[IO, SparkJobs] = jsonOf[IO, SparkJobs]
 
-  def getJobs(urlStr: String, appId: String) (implicit spark: SparkSession): IO[TypedDataset[SparkJob]] = {
+  def getJobs(env: AppEnv): IO[TypedDataset[SparkJob]] = {
 
-    val jobsUri = HttpClient.endPoint(urlStr) / "applications" / appId / "jobs"
+    implicit val spark = env.sparkSession
+
+    val jobsUri = HttpClient.endPoint(env.appConf.restEndpoint) / "applications" / env.appConf.appId / "jobs"
 
     val sj: IO[SparkJobs] = for {
       _    <- putStrLn ("Jobs URL: " + jobsUri)
