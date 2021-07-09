@@ -32,6 +32,23 @@ case class StageTask(taskId: Int,
                      shuffleWriteTime: Int,
                      shuffleRecordsWritten: Int)
 
+case class TaskAttributes( stageId: Int,
+                           attemptId: Int,
+                           taskId: Int,
+                           attempt: Int,  // dedup
+                           status: String, // Eg: SUCCESS
+                           statusOrder: Int, // Eg: SUCCESS
+                           duration: Int, // In seconds
+                           resultSize: Int, // In bytes
+                           jvmGcTime: Int, // In milliseconds
+                           bytesRead: Int, // from source/persisted data
+                           bytesWritten: Int,
+                           shuffleRemoteBytesRead: Int,
+                           shuffleLocalBytesRead: Int,
+                           shuffleBytesWritten: Int
+                         )
+
+
 object StageTask {
 
   type StageTasks = Seq[StageTask]
