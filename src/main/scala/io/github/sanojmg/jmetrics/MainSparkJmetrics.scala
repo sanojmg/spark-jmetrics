@@ -15,11 +15,7 @@ import org.apache.log4j.{Level, Logger}
 
 object MainSparkJmetrics extends App {
 
-//    val url: String = "http://localhost:18080/api/v1"
-//    val appId = "local-1624798402391"
-
     Logger.getRootLogger.setLevel(Level.OFF)
-
 
     val restEndpointOpt = Opts
       .option[String]("rest-endpoint", short = "r", metavar = "url",
@@ -57,10 +53,6 @@ object MainSparkJmetrics extends App {
     spark.sparkContext.setLogLevel("WARN")
 
     val env = AppEnv(appConf, spark)
-
-//    import org.slf4j.LoggerFactory
-
-//    val logger = LoggerFactory.getLogger(this.getClass)
 
     import org.apache.log4j.Logger
 

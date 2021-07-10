@@ -1,22 +1,5 @@
 package io.github.sanojmg.jmetrics.http
 
-//import cats.effect.{ContextShift, IO, Timer}
-//import org.http4s.client.blaze.BlazeClientBuilder
-//import org.http4s.dsl.io.GET
-//import org.http4s.headers.Accept
-//import org.http4s.{EntityDecoder, MediaType, Uri}
-//
-//import scala.concurrent.ExecutionContext.global
-
-
-//import org.http4s.client.blaze.BlazeClientBuilder
-//import org.http4s.dsl.io.GET
-//import org.http4s.headers.Accept
-//import org.http4s.{EntityDecoder, MediaType, Uri}
-//
-//
-//import scala.concurrent.ExecutionContext.global
-
 import cats.effect._
 import org.http4s._
 import org.http4s.dsl.io.{GET, _}
@@ -36,9 +19,6 @@ import cats.implicits._
 import io.circe.{Decoder, HCursor, Json}
 import org.http4s.headers.{Accept, Authorization}
 import org.http4s.circe._  // for implicit EntityDecoder[Json]
-//import io.circe.{ Decoder, Encoder, HCursor, Json }
-
-//import io.circe.optics.JsonPath._
 
 
 object HttpClient {
