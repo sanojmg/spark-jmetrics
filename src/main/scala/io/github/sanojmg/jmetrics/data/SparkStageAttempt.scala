@@ -24,16 +24,16 @@ case class SparkStageAttempt(stageId: Int,
                             )
 
 case class SparkStageAttemptTask(stageId: Int,
-                             attemptId: Int,
-                             name: String,
-                             status: String,
-                             numTasks: Int,
-                             numCompleteTasks: Int,
-                             numFailedTasks: Int,
-                             firstTaskLaunchedTime: Option[String],
-                             completionTime: Option[String],
-                             task: StageTask
-                            )
+                                 attemptId: Int,
+                                 name: String,
+                                 status: String,
+                                 numTasks: Int,
+                                 numCompleteTasks: Int,
+                                 numFailedTasks: Int,
+                                 firstTaskLaunchedTime: Option[String],
+                                 completionTime: Option[String],
+                                 task: StageTask
+                                )
 
 object SparkStageAttempt {
 

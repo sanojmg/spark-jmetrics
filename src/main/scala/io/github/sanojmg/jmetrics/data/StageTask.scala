@@ -32,21 +32,46 @@ case class StageTask(taskId: Int,
                      shuffleWriteTime: Int,
                      shuffleRecordsWritten: Int)
 
-case class TaskAttributes( stageId: Int,
-                           attemptId: Int,
-                           taskId: Int,
+case class TaskAttributes( taskId: Int,
                            attempt: Int,  // dedup
                            status: String, // Eg: SUCCESS
-                           statusOrder: Int, // Eg: SUCCESS
                            duration: Int, // In seconds
                            resultSize: Int, // In bytes
                            jvmGcTime: Int, // In milliseconds
                            bytesRead: Int, // from source/persisted data
                            bytesWritten: Int,
-                           shuffleRemoteBytesRead: Int,
-                           shuffleLocalBytesRead: Int,
-                           shuffleBytesWritten: Int
-                         )
+                           shuffleBytesRead: Int,
+                           shuffleBytesWritten: Int)
+
+case class TaskAttributesSt( taskId: Int,
+                             attempt: Int,  // dedup
+                             status: String, // Eg: SUCCESS
+                             duration: Int, // In seconds
+                             resultSize: Int, // In bytes
+                             jvmGcTime: Int, // In milliseconds
+                             bytesRead: Int, // from source/persisted data
+                             bytesWritten: Int,
+                             shuffleBytesRead: Int,
+                             shuffleBytesWritten: Int,
+                             statusOrder: Int)
+
+case class TaskDSProj( stageId: Int,
+                       attemptId: Int,
+                       task: StageTask,
+                       status: String
+                     )
+
+case class TaskStats(avgDuration: Double,
+                     maxDuration: Int,
+                     avgBytesRead: Double,
+                     maxBytesRead: Int,
+                     avgBytesWritten: Double,
+                     maxBytesWritten: Int,
+                     avgShuffleBytesRead: Double,
+                     maxShuffleBytesRead: Int,
+                     avgShuffleBytesWritten: Double,
+                     maxShuffleBytesWritten: Int
+                    )
 
 
 object StageTask {

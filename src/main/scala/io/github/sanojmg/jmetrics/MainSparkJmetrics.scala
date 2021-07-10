@@ -52,7 +52,7 @@ object MainSparkJmetrics extends App {
       .setAppName(s"spark-jmetrics [end-point: ${appConf.restEndpoint}, appId: ${appConf.appId}]")
       .set("spark.ui.enabled", "false")
 
-    lazy val spark = SparkSession.builder().config(sparkConf).appName("spark-jmetrics").getOrCreate()
+    implicit val spark = SparkSession.builder().config(sparkConf).appName("spark-jmetrics").getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
 
