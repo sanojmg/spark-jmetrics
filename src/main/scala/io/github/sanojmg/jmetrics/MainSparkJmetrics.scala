@@ -9,8 +9,10 @@ import com.monovore.decline.{Command, Opts}
 import io.github.sanojmg.jmetrics.config.{AppConfig, AppEnv}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
-import io.github.sanojmg.jmetrics.core.Metrics.getMetrics
+import io.github.sanojmg.jmetrics.core.Metrics
 import org.apache.log4j.{Level, Logger}
+
+import scala.util.Try
 
 
 object MainSparkJmetrics extends App {
@@ -27,28 +29,32 @@ object MainSparkJmetrics extends App {
 
     val configOps: Opts[AppConfig] = (restEndpointOpt, appIdOpt, outFileOpt).mapN (AppConfig.apply)
 
-    val commnand = Command(
+    val command = Command(
         name = "java -jar spark-jmetrics_2.12-0.1.jar",
         header = "A tool to help optimization and troubleshooting of Apache Spark jobs by analysing job metrics"
     ) {
         configOps
     }
 
-    val appConf = commnand.parse(args, sys.env) match {
+    val appConf = command.parse(args, sys.env) match {
         case Left(help) =>
             System.err.println(help)
             sys.exit(1)
         case Right(conf) => conf
     }
 
-    val metrics = getMetrics()
+    val metrics = Metrics.getMetrics()
 
     val sparkConf = new SparkConf()
       .setMaster("local[*]")
       .setAppName(s"spark-jmetrics [end-point: ${appConf.restEndpoint}, appId: ${appConf.appId}]")
       .set("spark.ui.enabled", "false")
 
-    implicit val spark = SparkSession.builder().config(sparkConf).appName("spark-jmetrics").getOrCreate()
+    implicit val spark = SparkSession
+      .builder()
+      .config(sparkConf)
+      .appName("spark-jmetrics")
+      .getOrCreate()
 
     spark.sparkContext.setLogLevel("WARN")
 
@@ -58,7 +64,7 @@ object MainSparkJmetrics extends App {
 
     Logger.getRootLogger.setLevel(Level.OFF)
 
-    getMetrics().run(env).unsafeRunSync()
+    Metrics.getMetrics().run(env).unsafeRunSync()
 
-    spark.stop()
+    Try(spark.stop())
 }

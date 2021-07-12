@@ -18,7 +18,7 @@ import cats.effect._
 import cats.implicits._
 import io.circe.{Decoder, HCursor, Json}
 import org.http4s.headers.{Accept, Authorization}
-import org.http4s.circe._  // for implicit EntityDecoder[Json]
+import org.http4s.circe._   // for implicit EntityDecoder[Json]
 
 
 object HttpClient {
@@ -33,8 +33,12 @@ object HttpClient {
       uri,
       Accept(MediaType.application.json)
     )
-    BlazeClientBuilder[IO](global).resource.use { client =>
-      client.expect[T](request)
-    }
+
+    BlazeClientBuilder[IO](global)
+      .withMaxTotalConnections(10)
+      .resource
+      .use { client =>
+        client.expect[T](request)
+      }
   }
 }

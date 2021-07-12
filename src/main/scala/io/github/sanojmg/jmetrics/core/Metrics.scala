@@ -1,7 +1,5 @@
 package io.github.sanojmg.jmetrics.core
 
-//import alleycats.Pure.pureFlatMapIsMonad
-//import cats.implicits.catsSyntaxFlatMapOps
 import scala.concurrent.duration._
 import org.apache.spark.{SparkConf, SparkContext, sql}
 import org.apache.spark.sql.{DataFrame, Dataset, SparkSession, functions => sf}
@@ -39,7 +37,7 @@ object Metrics {
       _             <- printA("Start: getMetrics")
 
       env           <- ReaderT.ask[IO, AppEnv]
-      jobDS         <- ReaderT.liftF(SparkJob.getJobs(env))
+      jobDS         <- ReaderT.liftF(SparkJob.getJobsDS[IO](env))
       jobs          <- jobDS.orderBy(jobDS('jobId).asc).collect[Action]()
 
       _             <- printA(Console.GREEN, s"""====> Jobs: \n${jobs.mkString("\n")}""")
@@ -64,11 +62,11 @@ object Metrics {
   def getStageMetrics(jobId: Int, stageId: Int): Action[Option[String]] = for {
       _             <- printA(Console.YELLOW, s"----------> Getting Metrics for Stage id: ${stageId}")
       env           <- ReaderT.ask[IO, AppEnv]
-      stageDS       <- ReaderT.liftF(SparkStageAttempt.getStage(env, stageId))
+      stageDS       <- ReaderT.liftF(SparkStageAttempt.getStage[IO](env, stageId))
       stages        <- stageDS.collect[Action]()
-      taskDS        = stageDS.explode('tasks).as[SparkStageAttemptTask]
-      tasks         <- taskDS.collect[Action]()
-      _             <- printA(Console.GREEN, s"""====> Tasks: \n${tasks.mkString("\n")}""")
+//      taskDS        = stageDS.explode('tasks).as[SparkStageAttemptTask]
+//      tasks         <- taskDS.collect[Action]()
+//      _             <- printA(Console.GREEN, s"""====> Tasks: \n${tasks.mkString("\n")}""")
       res           <- stages.toList.traverse(generateMetricsForAStageAttempt(jobId, _)(env.sparkSession))
       _             <- printA(Console.YELLOW, s"----------> Done Getting Metrics for Stage id: ${stageId}")
 
