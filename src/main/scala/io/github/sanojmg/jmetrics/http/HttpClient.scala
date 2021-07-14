@@ -20,7 +20,6 @@ import io.circe.{Decoder, HCursor, Json}
 import org.http4s.headers.{Accept, Authorization}
 import org.http4s.circe._   // for implicit EntityDecoder[Json]
 
-
 object HttpClient {
 
   implicit val cs: ContextShift[IO] = IO.contextShift(global)
@@ -35,7 +34,7 @@ object HttpClient {
     )
 
     BlazeClientBuilder[IO](global)
-      .withMaxTotalConnections(10)
+      .withMaxTotalConnections(5)
       .resource
       .use { client =>
         client.expect[T](request)

@@ -15,11 +15,11 @@ case class SparkJob(jobId: Int,
                     name: String,
                     submissionTime: String,
                     completionTime: String,
-                    stageIds: Seq[Int])
+                    stageIds: List[Int])
 
 object SparkJob {
 
-  type SparkJobs = Seq[SparkJob]
+  type SparkJobs = List[SparkJob]
 
   implicit val decodeJob: Decoder[SparkJob] = new Decoder[SparkJob] {
     final def apply(c: HCursor): Decoder.Result[SparkJob] = (
@@ -27,7 +27,7 @@ object SparkJob {
         c.downField("name").as[String],
         c.downField("submissionTime").as[String],
         c.downField("completionTime").as[String],
-        c.downField("stageIds").as[Seq[Int]]
+        c.downField("stageIds").as[List[Int]]
       ) mapN SparkJob.apply
   }
 
@@ -36,7 +36,7 @@ object SparkJob {
     getJobs[F](env) map (TypedDataset.create(_))
   }
 
-  def getJobs[F[_]: Sync: LiftIO](env: AppEnv): F[Seq[SparkJob]] = {
+  def getJobs[F[_]: Sync: LiftIO](env: AppEnv): F[List[SparkJob]] = {
 
     implicit val jobEntityDecoder: EntityDecoder[IO, SparkJobs] = jsonOf[IO, SparkJobs]
 

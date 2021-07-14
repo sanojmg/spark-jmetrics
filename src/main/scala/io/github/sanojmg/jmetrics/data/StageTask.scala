@@ -43,6 +43,33 @@ case class TaskAttributes( taskId: Int,
                            shuffleBytesRead: Int,
                            shuffleBytesWritten: Int)
 
+case class StageTaskAttr( stageId: Int,
+                          attemptId: Int,
+                          taskId: Int,
+                          attempt: Int,  // dedup
+                          status: String, // Eg: SUCCESS
+                          duration: Int, // In seconds
+                          resultSize: Int, // In bytes
+                          jvmGcTime: Int, // In milliseconds
+                          bytesRead: Int, // from source/persisted data
+                          bytesWritten: Int,
+                          shuffleBytesRead: Int,
+                          shuffleBytesWritten: Int)
+
+case class StageTaskAttrSt( stageId: Int,
+                            attemptId: Int,
+                            taskId: Int,
+                            attempt: Int,  // dedup
+                            status: String, // Eg: SUCCESS
+                            duration: Int, // In seconds
+                            resultSize: Int, // In bytes
+                            jvmGcTime: Int, // In milliseconds
+                            bytesRead: Int, // from source/persisted data
+                            bytesWritten: Int,
+                            shuffleBytesRead: Int,
+                            shuffleBytesWritten: Int,
+                            statusOrder: Int)
+
 case class TaskAttributesSt( taskId: Int,
                              attempt: Int,  // dedup
                              status: String, // Eg: SUCCESS
@@ -54,6 +81,18 @@ case class TaskAttributesSt( taskId: Int,
                              shuffleBytesRead: Int,
                              shuffleBytesWritten: Int,
                              statusOrder: Int)
+
+//case class StageTaskAttributes( taskId: Int,
+//                           attempt: Int,  // dedup
+//                           status: String, // Eg: SUCCESS
+//                           duration: Int, // In seconds
+//                           resultSize: Int, // In bytes
+//                           jvmGcTime: Int, // In milliseconds
+//                           bytesRead: Int, // from source/persisted data
+//                           bytesWritten: Int,
+//                           shuffleBytesRead: Int,
+//                           shuffleBytesWritten: Int)
+
 
 case class TaskDSProj( stageId: Int,
                        attemptId: Int,
@@ -73,10 +112,23 @@ case class TaskStats(avgDuration: Double,
                      maxShuffleBytesWritten: Int
                     )
 
+case class StageTaskStats(stageId: Int,
+                          attemptId: Int,
+                          avgDuration: Double,
+                          maxDuration: Int,
+                          avgBytesRead: Double,
+                          maxBytesRead: Int,
+                          avgBytesWritten: Double,
+                          maxBytesWritten: Int,
+                          avgShuffleBytesRead: Double,
+                          maxShuffleBytesRead: Int,
+                          avgShuffleBytesWritten: Double,
+                          maxShuffleBytesWritten: Int
+                         )
 
 object StageTask {
 
-  type StageTasks = Seq[StageTask]
+  type StageTasks = List[StageTask]
 
   implicit val decodeJob: Decoder[StageTask] = new Decoder[StageTask] {
     final def apply(c: HCursor): Decoder.Result[StageTask] = (

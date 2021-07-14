@@ -1,7 +1,7 @@
 package io.github.sanojmg.jmetrics
 
 import cats.data.ReaderT
-import cats.effect.IO
+import cats.effect.{Concurrent, ContextShift, IO, LiftIO, Sync, Timer}
 import cats.implicits._
 
 import java.nio.file.Path
@@ -9,10 +9,17 @@ import com.monovore.decline.{Command, Opts}
 import io.github.sanojmg.jmetrics.config.{AppConfig, AppEnv}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
-import io.github.sanojmg.jmetrics.core.Metrics
+import io.github.sanojmg.jmetrics.core.{Metrics, MetricsVer2}
 import org.apache.log4j.{Level, Logger}
 
 import scala.util.Try
+import cats._
+import cats.data._
+import cats.implicits._
+import cats.data.ReaderT
+import cats.effect.IO._
+
+import scala.concurrent.ExecutionContext.global
 
 
 object MainSparkJmetrics extends App {
@@ -64,7 +71,10 @@ object MainSparkJmetrics extends App {
 
     Logger.getRootLogger.setLevel(Level.OFF)
 
-    Metrics.getMetrics().run(env).unsafeRunSync()
+    implicit val cs: ContextShift[IO] = IO.contextShift(global)
+    implicit val timer: Timer[IO] = IO.timer(global)
 
-    Try(spark.stop())
+    MetricsVer2.getMetrics[IO]().run(env).unsafeRunSync()
+
+    spark.stop()
 }

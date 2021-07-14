@@ -21,12 +21,14 @@ import frameless.functions._
 import io.github.sanojmg.jmetrics.config.AppConfig
 import io.github.sanojmg.jmetrics.config.AppEnv
 import io.github.sanojmg.jmetrics.data._
-
 import cats._
 import cats.data._
 import cats.implicits._
 import cats.data.ReaderT
-import cats.effect.IO
+import cats.effect.{ContextShift, IO, Timer}
+import cats.effect.IO.contextShift
+
+import scala.concurrent.ExecutionContext.global
 
 object Metrics {
 
@@ -51,7 +53,7 @@ object Metrics {
   def getJobMetrics(job: SparkJob): Action[Option[String]] =
     for {
       _             <- printA(Console.GREEN, s"===========> Getting Metrics for Job id: ${job.jobId}")
-      res           <- job.stageIds.toList.traverse(getStageMetrics(job.jobId, _))  // mapM
+      res           <- job.stageIds.traverse(getStageMetrics(job.jobId, _))  // mapM
       _             <- printA(Console.GREEN, s"===========> Done Getting Metrics for Job id: ${job.jobId}")
     } yield
         res       // :: List[Option[String]]
@@ -59,10 +61,13 @@ object Metrics {
           .map(_.mkString("\n"))
           .map(str => s"JobId Id: ${job.jobId}\n${str}")
 
+  implicit val cs: ContextShift[IO] = IO.contextShift(global)
+  implicit val timer: Timer[IO] = IO.timer(global)
+
   def getStageMetrics(jobId: Int, stageId: Int): Action[Option[String]] = for {
       _             <- printA(Console.YELLOW, s"----------> Getting Metrics for Stage id: ${stageId}")
       env           <- ReaderT.ask[IO, AppEnv]
-      stageDS       <- ReaderT.liftF(SparkStageAttempt.getStage[IO](env, stageId))
+      stageDS       <- ReaderT.liftF(SparkStageAttempt.getStageDS[IO](env, stageId))
       stages        <- stageDS.collect[Action]()
 //      taskDS        = stageDS.explode('tasks).as[SparkStageAttemptTask]
 //      tasks         <- taskDS.collect[Action]()
@@ -88,10 +93,10 @@ object Metrics {
          | AttemptId: ${stageAttempt.attemptId}  :
          |\n\n${stats.mkString("\n")}""".stripMargin)
   } yield
-    getSkew(stats)
+    DataSkewMeasures.getSkew1(stats)
       .map(str => s"\n\tStage Attempt Id: ${stageAttempt.attemptId}\n${str}\n")
 
-  def getTaskAttr(tasks: Seq[StageTask]): Action[TypedDataset[TaskAttributesSt]] = for {
+  def getTaskAttr(tasks: List[StageTask]): Action[TypedDataset[TaskAttributesSt]] = for {
     env            <- ReaderT.ask[IO, AppEnv]
     taskDS         = TypedDataset.create(tasks)(TypedEncoder[StageTask], env.sparkSession)
     tAttrAll       = taskDS.selectMany(
@@ -125,7 +130,7 @@ object Metrics {
   } yield
     (dsLatest.as[TaskAttributesSt](Encoders.product[TaskAttributesSt]).typed)
 
-  def generateStats(attrDS: TypedDataset[TaskAttributesSt]): Action[Seq[TaskStats]] = for {
+  def generateStats(attrDS: TypedDataset[TaskAttributesSt]): Action[List[TaskStats]] = for {
     env            <- ReaderT.ask[IO, AppEnv]
     stats          <- attrDS.aggMany(
                         avg(attrDS('duration)),
@@ -139,24 +144,8 @@ object Metrics {
                         avg(attrDS('shuffleBytesWritten)),
                         max(attrDS('shuffleBytesWritten))
                       ).as[TaskStats].collect[Action]()
-  } yield stats
+  } yield stats.toList
 
-  def getSkew(stList: Seq[TaskStats]): Option[String] =
-    stList.toList.traverse(getSkew(_)).map(_.mkString("\n"))
-
-  def getSkew(st: TaskStats): Option[String] =
-    List(
-      getSkewStr("Duration", st.avgDuration, st.maxDuration),
-      getSkewStr("Bytes Read", st.avgBytesRead, st.maxBytesRead),
-      getSkewStr("Bytes Written", st.avgBytesWritten, st.maxBytesWritten),
-      getSkewStr("Shuffle Bytes Read", st.avgShuffleBytesRead, st.maxShuffleBytesRead),
-      getSkewStr("Shuffle Bytes Written", st.avgShuffleBytesWritten, st.maxShuffleBytesWritten)
-    ).sequence.map(_.mkString("\n"))
-
-  def getSkewStr(skewType: String, avg: Double, max: Int): Option[String] =
-    Some((skewType, avg, max))
-      .filter {case (_, avg, max) => max/avg >= 3}
-      .map {case (skewType, avg, max) => s"\t\t${skewType} => Avg: ${pretty(avg)}, Max: ${pretty(max)}" }
 
   def printA(color: String, value: Any): Action[Unit] = ReaderT.liftF(putStrLn(color + value + Console.RESET))
 
