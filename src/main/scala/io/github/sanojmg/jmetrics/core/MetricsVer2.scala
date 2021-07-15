@@ -27,6 +27,7 @@ import cats.effect.IO.contextShift
 import scala.concurrent.ExecutionContext.global
 import io.github.sanojmg.jmetrics.core.Metrics.{generateMetricsForAStageAttempt, getTaskAttr}
 import io.github.sanojmg.jmetrics.data.SparkJob.SparkJobs
+import org.apache.spark.sql.types.IntegerType
 
 object MetricsVer2 {
 
@@ -50,6 +51,7 @@ object MetricsVer2 {
                          .getSkew(stats, env)
                          .getOrElse("******* No Data Skew Detected *******")
     _                <- printC(Console.RED, s"Data Skew: \n${skewStr}")
+    _                <- writeToOutFile(skewStr)
     _                <- printC("End: getMetrics")
 
   } yield ()
@@ -145,8 +147,8 @@ object MetricsVer2 {
 
     // Caution: No type safety from here
     statDS         = ds.groupBy(ds("stageId"), ds("attemptId")).agg(
-                        sf.avg(ds("duration")).as("avgDuration"),
-                        sf.max(ds("duration")).as("maxDuration"),
+                        sf.avg(ds("duration").divide(1000)).as("avgDuration"),
+                        sf.max(ds("duration").divide(1000).cast(IntegerType)).as("maxDuration"),
                         sf.avg(ds("bytesRead")).as("avgBytesRead"),
                         sf.max(ds("bytesRead")).as("maxBytesRead"),
                         sf.avg(ds("bytesWritten")).as("avgBytesWritten"),
@@ -162,6 +164,13 @@ object MetricsVer2 {
   } yield
     stats.toList
 
+  def writeToOutFile[F[_]: Sync: Concurrent](data: String): Action[F, Unit] = for {
+    env              <- Kleisli.ask[F, AppEnv]
+    outFile          = env.appConf.outFile
+    _                <- Kleisli.liftF(outFile.traverse(writeFile[F](_,data)))
+    _                <- printC(Console.GREEN, s"Output has been written to " +
+                            s"${outFile.getOrElse("--")}")
+  } yield ()
 
   def collect[F[_]: Sync, T](tds: TypedDataset[T]): Action[F, Seq[T]] =
     // Use type lambda to collect Action from TypedDataset

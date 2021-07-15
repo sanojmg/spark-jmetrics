@@ -13,7 +13,7 @@ object DataSkewMeasures {
   def getSkew(stList: List[StageTaskStats], env: AppEnv): Option[String] =
     stList
       .filter(isSkewed(_,env))
-      .sortBy(_.maxDuration * -1)
+      .sortBy(s => s.maxDuration * -1/s.avgDuration)
       .traverse(getSkewForAStage(_))
       .map(_.mkString("\n"))
 
@@ -29,7 +29,7 @@ object DataSkewMeasures {
 
   def getSkewForAStage(st: StageTaskStats): Option[String] =
     List(
-      getSkewStrSeconds("Duration", st.avgDuration, st.maxDuration),
+      getSkewStrSeconds("Duration (HH:mm:ss)", st.avgDuration, st.maxDuration),
       getSkewStrBytes("Bytes Read", st.avgBytesRead, st.maxBytesRead),
       getSkewStrBytes("Bytes Written", st.avgBytesWritten, st.maxBytesWritten),
       getSkewStrBytes("Shuffle Bytes Read", st.avgShuffleBytesRead, st.maxShuffleBytesRead),
@@ -46,7 +46,7 @@ object DataSkewMeasures {
   def getSkewStrBytes(skewType: String, avg: Double, max: Long): Option[String] =
     Some((skewType, avg, max))
       .map {case (skewType, avg, max)
-      => f"\t${skewType}%-25s => Avg: ${prettyBytes(avg.toLong)}%-15s, Max: ${prettyBytes(max)}%-15s" }
+      => f"\t${skewType}%-25s => Avg: ${prettyBytes(avg.toLong)}%-17s, Max: ${prettyBytes(max)}%-17s" }
 
   // Version 1 - to be removed
   def getSkew1(stList: List[TaskStats]): Option[String] =
@@ -62,4 +62,17 @@ object DataSkewMeasures {
       getSkewStrBytes("Shuffle Bytes Written", st.avgShuffleBytesWritten, st.maxShuffleBytesWritten)
     ).sequence.map(_.mkString("\n"))
 
+  /*
+    TODO:
+     Job Name & Duration, Stage Name & Duration
+     Title - Metrics for tasks per stage: Stage with highest skew in task durations first
+     Check: skew() as a measure
+     Fix: Duration in millis
+     Pretty time - hh:MM:ss
+     Stage measures - Total number of tasks in a stage - numTasks (completed/failed/killed),
+               shuffle read, shuffle write, input, output (memory/disk spilled)
+     Task measures: gc time, shuffle spill - disk & memory, Avg/Max - Ratio, Percentils?
+     Executor cores & memory, Driver memory
+     Detailed output: Stage details
+   */
 }

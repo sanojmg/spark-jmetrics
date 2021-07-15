@@ -102,7 +102,7 @@ object SparkStageAttempt {
       val retVal: F[List[SparkStageAttempt]] = for {
         _             <- bl.blockOn( putStrLn_[F] ("Stage URL: " + stageUri) )
         attempts      <- bl.blockOn( HttpClient.req (stageUri)(stageDecoder) .to[F] )
-        _             <- bl.blockOn( putStrLn_[F] ("Stage : " + attempts) )
+        //_             <- bl.blockOn( putStrLn_[F] ("Stage : " + attempts) )
       } yield
         attempts
       retVal

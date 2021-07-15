@@ -86,4 +86,12 @@ object MainSparkJmetrics extends App {
     MetricsVer2.getMetrics[IO]().run(env).unsafeRunSync()
 
      spark.stop()
+
+    /*
+    TODO:
+     - Spark configs from CLI - to run in a cluster
+     - Optimize this job - in memory dataset partition size, shuffle partitions
+     - Write output to file
+     - Cleanup logging
+     */
 }
