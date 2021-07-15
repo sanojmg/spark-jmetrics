@@ -20,9 +20,9 @@ case object PrintUtil {
     val m = (duration - h).toMinutes.minutes
     val s = (duration - h - m).toSeconds.seconds
 
-    Some(h).map(_.toHours).filter(_ > 0).map(_ + " hr ") |+|
-      Some(m).map(_.toMinutes).filter(_ > 0).map(_ + " min ") |+|
-      Some(s).map(_.toSeconds).filter(_ > 0).map(_ + " sec ")
+    Some(h).map(_.toHours).filter(_ > 0).map(_ + " hours ") |+|
+      Some(m).map(_.toMinutes).filter(_ > 0).map(_ + " minutes ") |+|
+      Some(s).map(_.toSeconds).filter(_ > 0).map(_ + " seconds ")
   }
 
   // =========== Storage/memory size in bytes =============

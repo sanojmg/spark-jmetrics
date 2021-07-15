@@ -41,12 +41,12 @@ object DataSkewMeasures {
   def getSkewStrSeconds(skewType: String, avg: Double, max: Long): Option[String] =
     Some((skewType, avg, max))
       .map {case (skewType, avg, max)
-            => f"\t${skewType}%-25s => Avg: ${prettyTime(avg)}%15s, Max: ${prettyTime(max)}%15s" }
+            => f"\t${skewType}%-25s => Avg: ${prettyTime(avg)}%-15s, Max: ${prettyTime(max)}%-15s" }
 
   def getSkewStrBytes(skewType: String, avg: Double, max: Long): Option[String] =
     Some((skewType, avg, max))
       .map {case (skewType, avg, max)
-      => f"\t${skewType}%-25s => Avg: ${prettyBytes(avg.toLong)}%15s, Max: ${prettyBytes(max)}%15s" }
+      => f"\t${skewType}%-25s => Avg: ${prettyBytes(avg.toLong)}%-15s, Max: ${prettyBytes(max)}%-15s" }
 
   // Version 1 - to be removed
   def getSkew1(stList: List[TaskStats]): Option[String] =
