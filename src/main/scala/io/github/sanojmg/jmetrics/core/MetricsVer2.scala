@@ -44,10 +44,10 @@ object MetricsVer2 {
     _                <- printC(s"================>stageMap: \n${stageMap.mkString("\n")}")
     // TODO - Change below function to return Kleisli instead of F
     stageAttempts    <- Kleisli.liftF(SparkStageAttempt.getStages[F](env, stageMap.keys.toList))
-    _                <- printC(s"================>stageAttempts: \n${stageAttempts.mkString("\n")}")
+    //_                <- printC(s"================>stageAttempts: \n${stageAttempts.mkString("\n")}")
     stats            <- generateMetricsForAllStages[F](stageAttempts)
     skewStr          = DataSkewMeasures
-                         .getSkew(stats)
+                         .getSkew(stats, env)
                          .getOrElse("******* No Data Skew Detected *******")
     _                <- printC(Console.RED, s"Data Skew: \n${skewStr}")
     _                <- printC("End: getMetrics")
@@ -67,7 +67,7 @@ object MetricsVer2 {
   def generateMetricsForAllStages[F[_]: Sync: LiftIO: Parallel: Concurrent: ContextShift]
               (stages: List[SparkStageAttempt]): Action[F, List[StageTaskStats]] = for {
     env               <- Kleisli.ask[F, AppEnv]
-    _                 <- printC[F](Console.YELLOW_B, s"=======> Getting Stats for All stages...")
+    _                 <- printC[F](Console.BOLD, s"=======> Running Spark job to analyse metrics...")
     stgTskAttr        <- explodeAsTasks[F](stages)
 //    taskCount         <- count(stgTskAttr)
 //    _                 <- printC[F](Console.YELLOW_B, s"=======> count(stageTaskAttr) = ${taskCount}")
@@ -76,7 +76,7 @@ object MetricsVer2 {
 //    _                 <- printC[F](Console.YELLOW_B, s"=======> count(stgTskAttrUnq) = ${taskUnqCount}")
     stats             <- generateStats[F](stgTskAttrUnq)
     _                 <- printC[F](Console.CYAN, s"""=======> Task Stats = \n${stats.mkString("\n")}""")
-    _                 <- printC[F](Console.YELLOW_B, s"=======> Getting Stats for All stages...Done")
+    _                 <- printC[F](Console.GREEN, s"=======> Getting Stats for All stages...Done")
 
   } yield stats
 

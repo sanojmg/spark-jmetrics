@@ -30,15 +30,24 @@ object MainSparkJmetrics extends App {
       .option[String]("rest-endpoint", short = "r", metavar = "url",
           help = "Rest endpoint for Spark Application or History Server (Eg: http://localhost:18080/api/v1)")
 
-    val appIdOpt = Opts.option[String]("app-id", short = "a", metavar = "id", help = "Spark Application Id")
+    val appIdOpt = Opts.option[String]("app-id", short = "a", metavar = "id",
+        help = "Spark Application Id")
 
-    val outFileOpt = Opts.option[Path]("out-file", short = "o", metavar = "file", help = "Output file").orNone
+    val outFileOpt = Opts.option[Path]("out-file", short = "o", metavar = "file",
+        help = "Output file").orNone
 
-    val configOps: Opts[AppConfig] = (restEndpointOpt, appIdOpt, outFileOpt).mapN (AppConfig.apply)
+    val skewThreshold = Opts.option[Double]("skew-threshold", short = "t", metavar = "ratio",
+        help = "Data skew detection threshold on Max/Avg ratio").orNone
+
+    val configOps: Opts[AppConfig] = (restEndpointOpt, appIdOpt, outFileOpt, skewThreshold)
+      .mapN (AppConfig.apply)
 
     val command = Command(
         name = "java -jar spark-jmetrics_2.12-0.1.jar",
-        header = "A tool to help optimization and troubleshooting of Apache Spark jobs by analysing job metrics"
+        header =
+            s"""A tool to help optimization and troubleshooting of Apache Spark
+               |jobs by analysing job metrics
+               |""".stripMargin.replaceAll("\n", " ")
     ) {
         configOps
     }
@@ -76,5 +85,5 @@ object MainSparkJmetrics extends App {
 
     MetricsVer2.getMetrics[IO]().run(env).unsafeRunSync()
 
-    spark.stop()
+     spark.stop()
 }

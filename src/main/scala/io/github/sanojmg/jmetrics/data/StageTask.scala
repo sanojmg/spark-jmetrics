@@ -10,6 +10,9 @@ import org.apache.spark.sql.SparkSession
 import org.http4s.EntityDecoder
 import org.http4s.circe.jsonOf
 
+import io.circe.generic.auto._
+import io.circe.syntax._
+
 case class StageTask(taskId: Int,
                      attempt: Int,
                      launchTime: String,
@@ -124,7 +127,9 @@ case class StageTaskStats(stageId: Int,
                           maxShuffleBytesRead: Int,
                           avgShuffleBytesWritten: Double,
                           maxShuffleBytesWritten: Int
-                         )
+                         ) {
+  override def toString() = this.asJson.noSpaces
+}
 
 object StageTask {
 

@@ -8,18 +8,17 @@ import cats.implicits._
 
 case object PrintUtil {
 
-  def pretty(seconds: Int): String = pretty(seconds.seconds).getOrElse("")
+  def pretty(seconds: Int): String = pretty(seconds.seconds).getOrElse("0")
 
-  def pretty(seconds: Double): String = pretty(seconds.toInt.seconds).getOrElse("")
+  def pretty(seconds: Double): String = pretty(seconds.toInt.seconds).getOrElse("0")
 
   def pretty(duration: Duration): Option[String] = {
     val h = duration.toHours.hours
     val m = (duration - h).toMinutes.minutes
     val s = (duration - h - m).toSeconds.seconds
 
-    Some(h).filter(_.toHours > 0).map(_ + "h ") |+|
-      Some(m).filter(_.toMinutes > 0).map(_ + "min ") |+|
-      Some(h).filter(_.toSeconds > 0).map(_ + "sec ")
-
+    Some(h).map(_.toHours).filter(_ > 0).map(_ + " hr ") |+|
+      Some(m).map(_.toMinutes).filter(_ > 0).map(_ + " min ") |+|
+      Some(s).map(_.toSeconds).filter(_ > 0).map(_ + " sec ")
   }
 }

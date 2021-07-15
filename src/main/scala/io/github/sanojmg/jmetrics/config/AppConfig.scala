@@ -10,7 +10,8 @@ import java.nio.file.Path
 case class AppConfig(
                   restEndpoint: String,
                   appId: String,
-                  outFile: Option[Path]
+                  outFile: Option[Path],
+                  skewThreshold: Option[Double]
                 )
 
 
