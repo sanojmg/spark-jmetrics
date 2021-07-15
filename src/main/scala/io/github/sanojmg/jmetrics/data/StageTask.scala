@@ -16,73 +16,73 @@ import io.circe.syntax._
 case class StageTask(taskId: Int,
                      attempt: Int,
                      launchTime: String,
-                     duration: Int,
+                     duration: Long,
                      executorId: String,
                      host: String,
                      status: String,
-                     executorRunTime: Int,
-                     resultSize: Int,
-                     jvmGcTime: Int,
-                     peakExecutionMemory: Int,
-                     bytesRead: Int,
-                     recordsRead: Int,
-                     bytesWritten: Int,
-                     recordsWritten: Int,
-                     shuffleRemoteBytesRead: Int,
-                     shuffleLocalBytesRead: Int,
-                     shuffleRecordsRead: Int,
-                     shuffleBytesWritten: Int,
-                     shuffleWriteTime: Int,
-                     shuffleRecordsWritten: Int)
+                     executorRunTime: Long,
+                     resultSize: Long,
+                     jvmGcTime: Long,
+                     peakExecutionMemory: Long,
+                     bytesRead: Long,
+                     recordsRead: Long,
+                     bytesWritten: Long,
+                     recordsWritten: Long,
+                     shuffleRemoteBytesRead: Long,
+                     shuffleLocalBytesRead: Long,
+                     shuffleRecordsRead: Long,
+                     shuffleBytesWritten: Long,
+                     shuffleWriteTime: Long,
+                     shuffleRecordsWritten: Long)
 
 case class TaskAttributes( taskId: Int,
                            attempt: Int,  // dedup
                            status: String, // Eg: SUCCESS
-                           duration: Int, // In seconds
-                           resultSize: Int, // In bytes
-                           jvmGcTime: Int, // In milliseconds
-                           bytesRead: Int, // from source/persisted data
-                           bytesWritten: Int,
-                           shuffleBytesRead: Int,
-                           shuffleBytesWritten: Int)
+                           duration: Long, // In seconds
+                           resultSize: Long, // In bytes
+                           jvmGcTime: Long, // In milliseconds
+                           bytesRead: Long, // from source/persisted data
+                           bytesWritten: Long,
+                           shuffleBytesRead: Long,
+                           shuffleBytesWritten: Long)
 
 case class StageTaskAttr( stageId: Int,
                           attemptId: Int,
                           taskId: Int,
                           attempt: Int,  // dedup
                           status: String, // Eg: SUCCESS
-                          duration: Int, // In seconds
-                          resultSize: Int, // In bytes
-                          jvmGcTime: Int, // In milliseconds
-                          bytesRead: Int, // from source/persisted data
-                          bytesWritten: Int,
-                          shuffleBytesRead: Int,
-                          shuffleBytesWritten: Int)
+                          duration: Long, // In seconds
+                          resultSize: Long, // In bytes
+                          jvmGcTime: Long, // In milliseconds
+                          bytesRead: Long, // from source/persisted data
+                          bytesWritten: Long,
+                          shuffleBytesRead: Long,
+                          shuffleBytesWritten: Long)
 
 case class StageTaskAttrSt( stageId: Int,
                             attemptId: Int,
                             taskId: Int,
                             attempt: Int,  // dedup
                             status: String, // Eg: SUCCESS
-                            duration: Int, // In seconds
-                            resultSize: Int, // In bytes
-                            jvmGcTime: Int, // In milliseconds
-                            bytesRead: Int, // from source/persisted data
-                            bytesWritten: Int,
-                            shuffleBytesRead: Int,
-                            shuffleBytesWritten: Int,
+                            duration: Long, // In seconds
+                            resultSize: Long, // In bytes
+                            jvmGcTime: Long, // In milliseconds
+                            bytesRead: Long, // from source/persisted data
+                            bytesWritten: Long,
+                            shuffleBytesRead: Long,
+                            shuffleBytesWritten: Long,
                             statusOrder: Int)
 
 case class TaskAttributesSt( taskId: Int,
                              attempt: Int,  // dedup
                              status: String, // Eg: SUCCESS
-                             duration: Int, // In seconds
-                             resultSize: Int, // In bytes
-                             jvmGcTime: Int, // In milliseconds
-                             bytesRead: Int, // from source/persisted data
-                             bytesWritten: Int,
-                             shuffleBytesRead: Int,
-                             shuffleBytesWritten: Int,
+                             duration: Long, // In seconds
+                             resultSize: Long, // In bytes
+                             jvmGcTime: Long, // In milliseconds
+                             bytesRead: Long, // from source/persisted data
+                             bytesWritten: Long,
+                             shuffleBytesRead: Long,
+                             shuffleBytesWritten: Long,
                              statusOrder: Int)
 
 //case class StageTaskAttributes( taskId: Int,
@@ -104,29 +104,29 @@ case class TaskDSProj( stageId: Int,
                      )
 
 case class TaskStats(avgDuration: Double,
-                     maxDuration: Int,
+                     maxDuration: Long,
                      avgBytesRead: Double,
-                     maxBytesRead: Int,
+                     maxBytesRead: Long,
                      avgBytesWritten: Double,
-                     maxBytesWritten: Int,
+                     maxBytesWritten: Long,
                      avgShuffleBytesRead: Double,
-                     maxShuffleBytesRead: Int,
+                     maxShuffleBytesRead: Long,
                      avgShuffleBytesWritten: Double,
-                     maxShuffleBytesWritten: Int
+                     maxShuffleBytesWritten: Long
                     )
 
 case class StageTaskStats(stageId: Int,
                           attemptId: Int,
                           avgDuration: Double,
-                          maxDuration: Int,
+                          maxDuration: Long,
                           avgBytesRead: Double,
-                          maxBytesRead: Int,
+                          maxBytesRead: Long,
                           avgBytesWritten: Double,
-                          maxBytesWritten: Int,
+                          maxBytesWritten: Long,
                           avgShuffleBytesRead: Double,
-                          maxShuffleBytesRead: Int,
+                          maxShuffleBytesRead: Long,
                           avgShuffleBytesWritten: Double,
-                          maxShuffleBytesWritten: Int
+                          maxShuffleBytesWritten: Long
                          ) {
   override def toString() = this.asJson.noSpaces
 }
@@ -140,24 +140,24 @@ object StageTask {
       c.downField("taskId").as[Int],
       c.downField("attempt").as[Int],
       c.downField("launchTime").as[String],
-      c.downField("duration").as[Int],
+      c.downField("duration").as[Long],
       c.downField("executorId").as[String],
       c.downField("host").as[String],
       c.downField("status").as[String],
-      c.downField("taskMetrics").downField("executorRunTime").as[Int],
-      c.downField("taskMetrics").downField("resultSize").as[Int],
-      c.downField("taskMetrics").downField("jvmGcTime").as[Int],
-      c.downField("taskMetrics").downField("peakExecutionMemory").as[Int],
-      c.downField("taskMetrics").downField("inputMetrics").downField("bytesRead").as[Int],
-      c.downField("taskMetrics").downField("inputMetrics").downField("recordsRead").as[Int],
-      c.downField("taskMetrics").downField("outputMetrics").downField("bytesWritten").as[Int],
-      c.downField("taskMetrics").downField("outputMetrics").downField("recordsWritten").as[Int],
-      c.downField("taskMetrics").downField("shuffleReadMetrics").downField("remoteBytesRead").as[Int],
-      c.downField("taskMetrics").downField("shuffleReadMetrics").downField("localBytesRead").as[Int],
-      c.downField("taskMetrics").downField("shuffleReadMetrics").downField("recordsRead").as[Int],
-      c.downField("taskMetrics").downField("shuffleWriteMetrics").downField("bytesWritten").as[Int],
-      c.downField("taskMetrics").downField("shuffleWriteMetrics").downField("writeTime").as[Int],
-      c.downField("taskMetrics").downField("shuffleWriteMetrics").downField("recordsWritten").as[Int]
+      c.downField("taskMetrics").downField("executorRunTime").as[Long],
+      c.downField("taskMetrics").downField("resultSize").as[Long],
+      c.downField("taskMetrics").downField("jvmGcTime").as[Long],
+      c.downField("taskMetrics").downField("peakExecutionMemory").as[Long],
+      c.downField("taskMetrics").downField("inputMetrics").downField("bytesRead").as[Long],
+      c.downField("taskMetrics").downField("inputMetrics").downField("recordsRead").as[Long],
+      c.downField("taskMetrics").downField("outputMetrics").downField("bytesWritten").as[Long],
+      c.downField("taskMetrics").downField("outputMetrics").downField("recordsWritten").as[Long],
+      c.downField("taskMetrics").downField("shuffleReadMetrics").downField("remoteBytesRead").as[Long],
+      c.downField("taskMetrics").downField("shuffleReadMetrics").downField("localBytesRead").as[Long],
+      c.downField("taskMetrics").downField("shuffleReadMetrics").downField("recordsRead").as[Long],
+      c.downField("taskMetrics").downField("shuffleWriteMetrics").downField("bytesWritten").as[Long],
+      c.downField("taskMetrics").downField("shuffleWriteMetrics").downField("writeTime").as[Long],
+      c.downField("taskMetrics").downField("shuffleWriteMetrics").downField("recordsWritten").as[Long]
     ) mapN StageTask.apply
   }
 

@@ -5,14 +5,17 @@ import scala.concurrent.duration._
 import cats._
 import cats.data._
 import cats.implicits._
+import org.apache.commons.io.FileUtils
 
 case object PrintUtil {
 
-  def pretty(seconds: Int): String = pretty(seconds.seconds).getOrElse("0")
+  // =========== Time in seconds =============
 
-  def pretty(seconds: Double): String = pretty(seconds.toInt.seconds).getOrElse("0")
+  def prettyTime(seconds: Long): String = prettyTime(seconds.seconds).getOrElse("0")
 
-  def pretty(duration: Duration): Option[String] = {
+  def prettyTime(seconds: Double): String = prettyTime(seconds.toInt.seconds).getOrElse("0")
+
+  def prettyTime(duration: Duration): Option[String] = {
     val h = duration.toHours.hours
     val m = (duration - h).toMinutes.minutes
     val s = (duration - h - m).toSeconds.seconds
@@ -21,4 +24,7 @@ case object PrintUtil {
       Some(m).map(_.toMinutes).filter(_ > 0).map(_ + " min ") |+|
       Some(s).map(_.toSeconds).filter(_ > 0).map(_ + " sec ")
   }
+
+  // =========== Storage/memory size in bytes =============
+  def prettyBytes(bytes: Long): String = FileUtils.byteCountToDisplaySize(bytes)
 }

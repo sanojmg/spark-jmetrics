@@ -1,7 +1,7 @@
 package io.github.sanojmg.jmetrics.core
 
 import io.github.sanojmg.jmetrics.data.{StageTaskStats, TaskStats}
-import io.github.sanojmg.jmetrics.util.PrintUtil.pretty
+import io.github.sanojmg.jmetrics.util.PrintUtil.{prettyTime, prettyBytes}
 import cats._
 import cats.data._
 import cats.implicits._
@@ -29,21 +29,24 @@ object DataSkewMeasures {
 
   def getSkewForAStage(st: StageTaskStats): Option[String] =
     List(
-      getSkewStr("Duration", st.avgDuration, st.maxDuration),
-      getSkewStr("Bytes Read", st.avgBytesRead, st.maxBytesRead),
-      getSkewStr("Bytes Written", st.avgBytesWritten, st.maxBytesWritten),
-      getSkewStr("Shuffle Bytes Read", st.avgShuffleBytesRead, st.maxShuffleBytesRead),
-      getSkewStr("Shuffle Bytes Written", st.avgShuffleBytesWritten, st.maxShuffleBytesWritten)
+      getSkewStrSeconds("Duration", st.avgDuration, st.maxDuration),
+      getSkewStrBytes("Bytes Read", st.avgBytesRead, st.maxBytesRead),
+      getSkewStrBytes("Bytes Written", st.avgBytesWritten, st.maxBytesWritten),
+      getSkewStrBytes("Shuffle Bytes Read", st.avgShuffleBytesRead, st.maxShuffleBytesRead),
+      getSkewStrBytes("Shuffle Bytes Written", st.avgShuffleBytesWritten, st.maxShuffleBytesWritten)
     )
       .sequence
       .map(s => s"""\n[Stage Id: ${st.stageId}, Attempt Id: ${st.attemptId}] \n${s.mkString("\n")} """)
 
-  def getSkewStr(skewType: String, avg: Double, max: Int): Option[String] =
+  def getSkewStrSeconds(skewType: String, avg: Double, max: Long): Option[String] =
     Some((skewType, avg, max))
       .map {case (skewType, avg, max)
-            => f"\t${skewType}%-25s => Avg: ${pretty(avg)}%15s, Max: ${pretty(max)}%15s" }
+            => f"\t${skewType}%-25s => Avg: ${prettyTime(avg)}%15s, Max: ${prettyTime(max)}%15s" }
 
-
+  def getSkewStrBytes(skewType: String, avg: Double, max: Long): Option[String] =
+    Some((skewType, avg, max))
+      .map {case (skewType, avg, max)
+      => f"\t${skewType}%-25s => Avg: ${prettyBytes(avg.toLong)}%15s, Max: ${prettyBytes(max)}%15s" }
 
   // Version 1 - to be removed
   def getSkew1(stList: List[TaskStats]): Option[String] =
@@ -52,11 +55,11 @@ object DataSkewMeasures {
   // Version 1 - to be removed
   def getSkewForAStage(st: TaskStats): Option[String] =
     List(
-      getSkewStr("Duration", st.avgDuration, st.maxDuration),
-      getSkewStr("Bytes Read", st.avgBytesRead, st.maxBytesRead),
-      getSkewStr("Bytes Written", st.avgBytesWritten, st.maxBytesWritten),
-      getSkewStr("Shuffle Bytes Read", st.avgShuffleBytesRead, st.maxShuffleBytesRead),
-      getSkewStr("Shuffle Bytes Written", st.avgShuffleBytesWritten, st.maxShuffleBytesWritten)
+      getSkewStrSeconds("Duration", st.avgDuration, st.maxDuration),
+      getSkewStrBytes("Bytes Read", st.avgBytesRead, st.maxBytesRead),
+      getSkewStrBytes("Bytes Written", st.avgBytesWritten, st.maxBytesWritten),
+      getSkewStrBytes("Shuffle Bytes Read", st.avgShuffleBytesRead, st.maxShuffleBytesRead),
+      getSkewStrBytes("Shuffle Bytes Written", st.avgShuffleBytesWritten, st.maxShuffleBytesWritten)
     ).sequence.map(_.mkString("\n"))
 
 }

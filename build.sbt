@@ -38,6 +38,7 @@ lazy val root = project.in(file(".")).
       // Pure Config
       // "com.github.pureconfig" %% "pureconfig"              % PureConfigVersion,
       // "com.github.pureconfig" %% "pureconfig-cats-effect2" % PureConfigVersion,
+      "commons-io"             % "commons-io"              % "2.11.0",
       // specs2
       "org.specs2"            %% "specs2-core"             % Specs2Version         % "test"
     ),
