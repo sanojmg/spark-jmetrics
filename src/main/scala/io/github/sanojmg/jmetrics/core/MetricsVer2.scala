@@ -25,7 +25,6 @@ import cats.effect.{ContextShift, IO, Timer}
 import cats.effect.IO.contextShift
 
 import scala.concurrent.ExecutionContext.global
-import io.github.sanojmg.jmetrics.core.Metrics.{generateMetricsForAStageAttempt, getTaskAttr}
 import io.github.sanojmg.jmetrics.data.SparkJob.SparkJobs
 import org.apache.spark.sql.types.IntegerType
 
@@ -48,14 +47,13 @@ object MetricsVer2 {
     //_                <- printC(s"================>stageAttempts: \n${stageAttempts.mkString("\n")}")
     stats            <- generateMetricsForAllStages[F](stageAttempts)
     skewStr          = DataSkewMeasures
-                         .getSkew(stats, env)
-                         .getOrElse("******* No Data Skew Detected *******")
+                         .getStageSkewMeasure(stats, env)
+                         .mkString("\n\n")
     _                <- printC(Console.RED, s"Data Skew: \n${skewStr}")
     _                <- writeToOutFile(skewStr)
     _                <- printC("End: getMetrics")
 
   } yield ()
-
 
   def getStageMap(jobs: List[SparkJob]): Map[StageId, List[JobId]] = {
     val pairs: List[(StageId, JobId)] =

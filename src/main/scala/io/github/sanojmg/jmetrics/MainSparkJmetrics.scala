@@ -9,7 +9,7 @@ import com.monovore.decline.{Command, Opts}
 import io.github.sanojmg.jmetrics.config.{AppConfig, AppEnv}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
-import io.github.sanojmg.jmetrics.core.{Metrics, MetricsVer2}
+import io.github.sanojmg.jmetrics.core.MetricsVer2
 import org.apache.log4j.{Level, Logger}
 
 import scala.util.Try
@@ -58,8 +58,6 @@ object MainSparkJmetrics extends App {
             sys.exit(1)
         case Right(conf) => conf
     }
-
-    val metrics = Metrics.getMetrics()
 
     val sparkConf = new SparkConf()
       .setMaster("local[*]")

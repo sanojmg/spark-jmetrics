@@ -1,21 +1,24 @@
 package io.github.sanojmg.jmetrics.core
 
 import io.github.sanojmg.jmetrics.data.{StageTaskStats, TaskStats}
-import io.github.sanojmg.jmetrics.util.PrintUtil.{prettyTime, prettyBytes}
 import cats._
 import cats.data._
 import cats.implicits._
 import io.github.sanojmg.jmetrics.config.AppEnv
+import io.github.sanojmg.jmetrics.types._
+
+import scala.concurrent.duration._
+
 
 object DataSkewMeasures {
+
   private final val DEFAULT_SKEW_THRESHOLD: Double = 3.0
 
-  def getSkew(stList: List[StageTaskStats], env: AppEnv): Option[String] =
+  def getStageSkewMeasure(stList: List[StageTaskStats], env: AppEnv): List[StageSkewMeasure] =
     stList
       .filter(isSkewed(_,env))
-      .sortBy(s => s.maxDuration * -1/s.avgDuration)
-      .traverse(getSkewForAStage(_))
-      .map(_.mkString("\n"))
+      .map(getStageSkewMeasure(_))
+      .sortBy(_.skewRatio * -1)
 
   def isSkewed(stage: StageTaskStats, env: AppEnv) = {
     val threshold = env.appConf.skewThreshold.getOrElse(DEFAULT_SKEW_THRESHOLD)
@@ -27,52 +30,68 @@ object DataSkewMeasures {
       stage.maxShuffleBytesWritten > threshold * stage.avgShuffleBytesWritten
   }
 
-  def getSkewForAStage(st: StageTaskStats): Option[String] =
-    List(
-      getSkewStrSeconds("Duration (HH:mm:ss)", st.avgDuration, st.maxDuration),
-      getSkewStrBytes("Bytes Read", st.avgBytesRead, st.maxBytesRead),
-      getSkewStrBytes("Bytes Written", st.avgBytesWritten, st.maxBytesWritten),
-      getSkewStrBytes("Shuffle Bytes Read", st.avgShuffleBytesRead, st.maxShuffleBytesRead),
-      getSkewStrBytes("Shuffle Bytes Written", st.avgShuffleBytesWritten, st.maxShuffleBytesWritten)
+
+  def getStageSkewMeasure(stats: StageTaskStats): StageSkewMeasure =  {
+    val taskDuration = DurationAgg(
+      TaskDuration,
+      TimeDuration(stats.avgDuration.toInt.seconds),
+      TimeDuration(stats.maxDuration.toInt.seconds)
     )
-      .sequence
-      .map(s => s"""\n[Stage Id: ${st.stageId}, Attempt Id: ${st.attemptId}] \n${s.mkString("\n")} """)
+    val bytesRead = DataSizeAgg(
+      BytesRead,
+      StorageSize(stats.avgBytesRead.toLong),
+      StorageSize(stats.maxBytesRead.toLong)
+    )
+    val bytesWritten = DataSizeAgg(
+      BytesWritten,
+      StorageSize(stats.avgBytesWritten.toLong),
+      StorageSize(stats.maxBytesWritten.toLong)
+    )
+    val shuffleBytesRead = DataSizeAgg(
+      ShuffleBytesRead,
+      StorageSize(stats.avgShuffleBytesRead.toLong),
+      StorageSize(stats.maxShuffleBytesRead.toLong)
+    )
+    val shuffleBytesWritten = DataSizeAgg(
+      ShuffleBytesWritten,
+      StorageSize(stats.avgShuffleBytesWritten.toLong),
+      StorageSize(stats.maxShuffleBytesWritten.toLong)
+    )
+    val taskAgg = List(
+      taskDuration,
+      bytesRead,
+      bytesWritten,
+      shuffleBytesRead,
+      shuffleBytesWritten
+    )
 
-  def getSkewStrSeconds(skewType: String, avg: Double, max: Long): Option[String] =
-    Some((skewType, avg, max))
-      .map {case (skewType, avg, max)
-            => f"\t${skewType}%-25s => Avg: ${prettyTime(avg)}%-15s, Max: ${prettyTime(max)}%-15s" }
-
-  def getSkewStrBytes(skewType: String, avg: Double, max: Long): Option[String] =
-    Some((skewType, avg, max))
-      .map {case (skewType, avg, max)
-      => f"\t${skewType}%-25s => Avg: ${prettyBytes(avg.toLong)}%-17s, Max: ${prettyBytes(max)}%-17s" }
-
-  // Version 1 - to be removed
-  def getSkew1(stList: List[TaskStats]): Option[String] =
-    stList.traverse(getSkewForAStage(_)).map(_.mkString("\n"))
-
-  // Version 1 - to be removed
-  def getSkewForAStage(st: TaskStats): Option[String] =
-    List(
-      getSkewStrSeconds("Duration", st.avgDuration, st.maxDuration),
-      getSkewStrBytes("Bytes Read", st.avgBytesRead, st.maxBytesRead),
-      getSkewStrBytes("Bytes Written", st.avgBytesWritten, st.maxBytesWritten),
-      getSkewStrBytes("Shuffle Bytes Read", st.avgShuffleBytesRead, st.maxShuffleBytesRead),
-      getSkewStrBytes("Shuffle Bytes Written", st.avgShuffleBytesWritten, st.maxShuffleBytesWritten)
-    ).sequence.map(_.mkString("\n"))
+    StageSkewMeasure(
+      stats.stageId,
+      "",
+      stats.attemptId,
+      Nil,
+      TimeDuration(0.seconds),
+      0,
+      stats.maxDuration/stats.avgDuration,
+      taskAgg
+    )
+  }
 
   /*
     TODO:
      Job Name & Duration, Stage Name & Duration
      Title - Metrics for tasks per stage: Stage with highest skew in task durations first
      Check: skew() as a measure
-     Fix: Duration in millis
-     Pretty time - hh:MM:ss
+     --- Fix: Duration in millis
+     --- Pretty time - hh:MM:ss
      Stage measures - Total number of tasks in a stage - numTasks (completed/failed/killed),
+               Job Ids and names,
                shuffle read, shuffle write, input, output (memory/disk spilled)
+     Top 5 Tasks by duration
      Task measures: gc time, shuffle spill - disk & memory, Avg/Max - Ratio, Percentils?
      Executor cores & memory, Driver memory
      Detailed output: Stage details
+     Tasks across all stages ordered by Duration, Read/Write/Shuffle
+     (Task Count, Stage, Job & Stage Averages)
    */
 }
