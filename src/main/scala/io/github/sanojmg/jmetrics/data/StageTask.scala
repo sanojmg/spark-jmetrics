@@ -85,18 +85,6 @@ case class TaskAttributesSt( taskId: Int,
                              shuffleBytesWritten: Long,
                              statusOrder: Int)
 
-//case class StageTaskAttributes( taskId: Int,
-//                           attempt: Int,  // dedup
-//                           status: String, // Eg: SUCCESS
-//                           duration: Int, // In seconds
-//                           resultSize: Int, // In bytes
-//                           jvmGcTime: Int, // In milliseconds
-//                           bytesRead: Int, // from source/persisted data
-//                           bytesWritten: Int,
-//                           shuffleBytesRead: Int,
-//                           shuffleBytesWritten: Int)
-
-
 case class TaskDSProj( stageId: Int,
                        attemptId: Int,
                        task: StageTask,

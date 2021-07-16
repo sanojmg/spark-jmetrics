@@ -9,7 +9,7 @@ import com.monovore.decline.{Command, Opts}
 import io.github.sanojmg.jmetrics.config.{AppConfig, AppEnv}
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
-import io.github.sanojmg.jmetrics.core.MetricsVer2
+import io.github.sanojmg.jmetrics.core.Analyzer
 import org.apache.log4j.{Level, Logger}
 
 import scala.util.Try
@@ -81,7 +81,7 @@ object MainSparkJmetrics extends App {
     implicit val cs: ContextShift[IO] = IO.contextShift(global)
     implicit val timer: Timer[IO] = IO.timer(global)
 
-    MetricsVer2.getMetrics[IO]().run(env).unsafeRunSync()
+    Analyzer.run[IO]().run(env).unsafeRunSync()
 
      spark.stop()
 
