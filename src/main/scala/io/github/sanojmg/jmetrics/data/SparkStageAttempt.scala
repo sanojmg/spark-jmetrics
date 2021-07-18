@@ -36,11 +36,13 @@ case class SparkStageAttempt(stageId: Int,
 // Selected attributes for a single stage attempt
 case class SparkStageAttemptAttr(stageId: Int,
                                  attemptId: Int,
+                                 numTasks: Int,
                                  tasks: List[StageTask]
                                 )
 // Tasks (Stage attempt attributes - with task exploded)
 case class SparkStageAttemptAttrExpl(stageId: Int,
                                      attemptId: Int,
+                                     numTasks: Int,
                                      task: StageTask
                                     )
 

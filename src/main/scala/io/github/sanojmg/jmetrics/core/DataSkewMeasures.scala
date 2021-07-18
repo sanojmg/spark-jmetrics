@@ -71,7 +71,7 @@ object DataSkewMeasures {
       stats.attemptId,
       Nil,
       TimeDuration(0.seconds),
-      0,
+      stats.numTasks,
       stats.maxDuration/stats.avgDuration,
       taskAgg
     )

@@ -19,8 +19,8 @@ case class StageSkewMeasure(
                          taskAgg: List[TaskAggregate]
                          ) extends Measure {
   override val toString =
-    f"""[Stage Id: ${stageId}, Attempt Id: ${attemptId}, Skew Ratio: ${skewRatio}]""" +
-    f"""\n${taskAgg.mkString("\n")}"""
+    f"""[Stage Id: ${stageId}, Attempt Id: ${attemptId}, Task Count: ${taskCount}, """ +
+    f"""Skew Ratio: ${skewRatio}] \n${taskAgg.mkString("\n")}"""
 }
 
 // TaskAggregate: Stage level measures aggregated from task metrics
