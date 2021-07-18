@@ -1,12 +1,14 @@
 package io.github.sanojmg.jmetrics.data
 
+import cats.data.Kleisli
 import cats.effect.{ConcurrentEffect, IO, LiftIO, Sync}
 import cats.implicits._
 import frameless.TypedDataset
 import io.circe.{Decoder, HCursor}
 import io.github.sanojmg.jmetrics.config.AppEnv
 import io.github.sanojmg.jmetrics.http.HttpClient
-import io.github.sanojmg.jmetrics.util.CatsUtil.putStrLn_
+import io.github.sanojmg.jmetrics.types.Common.Action
+import io.github.sanojmg.jmetrics.util.CatsUtil.{logA, putStrLn_}
 import org.apache.spark.sql.SparkSession
 import org.http4s.EntityDecoder
 import org.http4s.circe.jsonOf
@@ -19,8 +21,6 @@ case class SparkJob(jobId: Int,
 
 object SparkJob {
 
-  type SparkJobs = List[SparkJob]
-
   implicit val decodeJob: Decoder[SparkJob] = new Decoder[SparkJob] {
     final def apply(c: HCursor): Decoder.Result[SparkJob] = (
         c.downField("jobId").as[Int],
@@ -31,22 +31,21 @@ object SparkJob {
       ) mapN SparkJob.apply
   }
 
-  def getJobsDS[F[_]: Sync: LiftIO](env: AppEnv): F[TypedDataset[SparkJob]] = {
+  def getJobsDS[F[_]: Sync: LiftIO](env: AppEnv): Action[F, TypedDataset[SparkJob]] = {
     implicit val spark = env.sparkSession
-    getJobs[F](env) map (TypedDataset.create(_))
+    getJobs[F] map (TypedDataset.create(_))
   }
 
-  def getJobs[F[_]: Sync: LiftIO](env: AppEnv): F[List[SparkJob]] = {
+  implicit val jobEntityDecoder: EntityDecoder[IO, List[SparkJob]] = jsonOf[IO, List[SparkJob]]
 
-    implicit val jobEntityDecoder: EntityDecoder[IO, SparkJobs] = jsonOf[IO, SparkJobs]
-
-    val jobsUri = HttpClient.endPoint(env.appConf.restEndpoint) / "applications" / env.appConf.appId / "jobs"
-
-    for {
-      _            <- putStrLn_[F] ("Jobs URL: " + jobsUri)
-      jobs         <- HttpClient.req (jobsUri) (jobEntityDecoder) .to[F]
-      _            <- putStrLn_[F] ("Jobs : " + jobs)
+  def getJobs[F[_]: Sync: LiftIO](): Action[F, List[SparkJob]] = for {
+      env          <- Kleisli.ask[F, AppEnv]
+      jobsUri      = HttpClient.endPoint(env.appConf.restEndpoint) / "applications" / env.appConf.appId / "jobs"
+      _            <- logA[F] ("Jobs URL: " + jobsUri)
+      jobs         <- Kleisli.liftF(HttpClient.req(jobsUri).to[F])
+      _            <- logA[F] ("Jobs : " + jobs)
     } yield
       jobs
-  }
+
 }
+

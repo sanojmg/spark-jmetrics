@@ -1,14 +1,14 @@
 package io.github.sanojmg.jmetrics.core
 
-import io.github.sanojmg.jmetrics.data.{StageTaskStats, TaskStats}
+import scala.concurrent.duration._
+
 import cats._
 import cats.data._
 import cats.implicits._
+
 import io.github.sanojmg.jmetrics.config.AppEnv
 import io.github.sanojmg.jmetrics.types._
-
-import scala.concurrent.duration._
-
+import io.github.sanojmg.jmetrics.data.StageTaskStats
 
 object DataSkewMeasures {
 
@@ -40,22 +40,22 @@ object DataSkewMeasures {
     val bytesRead = DataSizeAgg(
       BytesRead,
       StorageSize(stats.avgBytesRead.toLong),
-      StorageSize(stats.maxBytesRead.toLong)
+      StorageSize(stats.maxBytesRead)
     )
     val bytesWritten = DataSizeAgg(
       BytesWritten,
       StorageSize(stats.avgBytesWritten.toLong),
-      StorageSize(stats.maxBytesWritten.toLong)
+      StorageSize(stats.maxBytesWritten)
     )
     val shuffleBytesRead = DataSizeAgg(
       ShuffleBytesRead,
       StorageSize(stats.avgShuffleBytesRead.toLong),
-      StorageSize(stats.maxShuffleBytesRead.toLong)
+      StorageSize(stats.maxShuffleBytesRead)
     )
     val shuffleBytesWritten = DataSizeAgg(
       ShuffleBytesWritten,
       StorageSize(stats.avgShuffleBytesWritten.toLong),
-      StorageSize(stats.maxShuffleBytesWritten.toLong)
+      StorageSize(stats.maxShuffleBytesWritten)
     )
     val taskAgg = List(
       taskDuration,

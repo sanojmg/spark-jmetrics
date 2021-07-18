@@ -1,26 +1,21 @@
 package io.github.sanojmg.jmetrics
 
-import cats.data.ReaderT
-import cats.effect.{Concurrent, ContextShift, IO, LiftIO, Sync, Timer}
-import cats.implicits._
-
+import scala.concurrent.ExecutionContext.global
 import java.nio.file.Path
-import com.monovore.decline.{Command, Opts}
-import io.github.sanojmg.jmetrics.config.{AppConfig, AppEnv}
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-import io.github.sanojmg.jmetrics.core.Analyzer
-import org.apache.log4j.{Level, Logger}
 
-import scala.util.Try
 import cats._
 import cats.data._
 import cats.implicits._
-import cats.data.ReaderT
 import cats.effect.IO._
+import cats.effect.{ContextShift, IO, Timer}
 
-import scala.concurrent.ExecutionContext.global
+import com.monovore.decline.{Command, Opts}
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
+import org.apache.log4j.{Level, Logger}
 
+import io.github.sanojmg.jmetrics.core.Analyzer
+import io.github.sanojmg.jmetrics.config.{AppConfig, AppEnv}
 
 object MainSparkJmetrics extends App {
 

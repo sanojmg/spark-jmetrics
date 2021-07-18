@@ -42,8 +42,13 @@ lazy val root = project.in(file(".")).
       // specs2
       "org.specs2"            %% "specs2-core"             % Specs2Version         % "test"
     ),
+    addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
     scalacOptions ++= Seq(
-      "-Ypartial-unification"
+      "-Ypartial-unification",
+      "-P:bm4:no-filtering:y",
+      "-P:bm4:no-map-id:y",
+      "-P:bm4:no-tupling:y",
+      "-P:bm4:implicit-patterns:y"
 //      ,"-Xlog-implicits"
     ),
     initialize ~= { _ => makeColorConsole() },

@@ -13,6 +13,7 @@ import org.http4s.circe.jsonOf
 import io.circe.generic.auto._
 import io.circe.syntax._
 
+// Task attributes
 case class StageTask(taskId: Int,
                      attempt: Int,
                      launchTime: String,
@@ -35,17 +36,7 @@ case class StageTask(taskId: Int,
                      shuffleWriteTime: Long,
                      shuffleRecordsWritten: Long)
 
-case class TaskAttributes( taskId: Int,
-                           attempt: Int,  // dedup
-                           status: String, // Eg: SUCCESS
-                           duration: Long, // In seconds
-                           resultSize: Long, // In bytes
-                           jvmGcTime: Long, // In milliseconds
-                           bytesRead: Long, // from source/persisted data
-                           bytesWritten: Long,
-                           shuffleBytesRead: Long,
-                           shuffleBytesWritten: Long)
-
+// Selected task attributes with stage id
 case class StageTaskAttr( stageId: Int,
                           attemptId: Int,
                           taskId: Int,
@@ -59,6 +50,7 @@ case class StageTaskAttr( stageId: Int,
                           shuffleBytesRead: Long,
                           shuffleBytesWritten: Long)
 
+// Task attributes with statusOrder column (to de-dup multiple task attempts)
 case class StageTaskAttrSt( stageId: Int,
                             attemptId: Int,
                             taskId: Int,
@@ -73,36 +65,7 @@ case class StageTaskAttrSt( stageId: Int,
                             shuffleBytesWritten: Long,
                             statusOrder: Int)
 
-case class TaskAttributesSt( taskId: Int,
-                             attempt: Int,  // dedup
-                             status: String, // Eg: SUCCESS
-                             duration: Long, // In seconds
-                             resultSize: Long, // In bytes
-                             jvmGcTime: Long, // In milliseconds
-                             bytesRead: Long, // from source/persisted data
-                             bytesWritten: Long,
-                             shuffleBytesRead: Long,
-                             shuffleBytesWritten: Long,
-                             statusOrder: Int)
-
-case class TaskDSProj( stageId: Int,
-                       attemptId: Int,
-                       task: StageTask,
-                       status: String
-                     )
-
-case class TaskStats(avgDuration: Double,
-                     maxDuration: Long,
-                     avgBytesRead: Double,
-                     maxBytesRead: Long,
-                     avgBytesWritten: Double,
-                     maxBytesWritten: Long,
-                     avgShuffleBytesRead: Double,
-                     maxShuffleBytesRead: Long,
-                     avgShuffleBytesWritten: Double,
-                     maxShuffleBytesWritten: Long
-                    )
-
+// Aggregated Tasks stats for a stage
 case class StageTaskStats(stageId: Int,
                           attemptId: Int,
                           avgDuration: Double,
@@ -120,8 +83,6 @@ case class StageTaskStats(stageId: Int,
 }
 
 object StageTask {
-
-  type StageTasks = List[StageTask]
 
   implicit val decodeJob: Decoder[StageTask] = new Decoder[StageTask] {
     final def apply(c: HCursor): Decoder.Result[StageTask] = (
@@ -149,7 +110,7 @@ object StageTask {
     ) mapN StageTask.apply
   }
 
-  val jobEntityDecoder: EntityDecoder[IO, StageTasks] = jsonOf[IO, StageTasks]
+  val jobEntityDecoder: EntityDecoder[IO, List[StageTask]] = jsonOf[IO, List[StageTask]]
 
 }
 

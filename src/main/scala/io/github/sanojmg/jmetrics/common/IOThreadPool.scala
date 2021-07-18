@@ -1,6 +1,6 @@
 package io.github.sanojmg.jmetrics.common
 
-import cats.effect.{Blocker, ContextShift, IO, Resource, Sync, Timer}
+import cats.effect.{Blocker, ContextShift, IO, LiftIO, Resource, Sync, Timer}
 
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{Executors, ThreadFactory}

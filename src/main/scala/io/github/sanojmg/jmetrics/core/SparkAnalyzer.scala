@@ -1,22 +1,8 @@
 package io.github.sanojmg.jmetrics.core
 
 import scala.concurrent.duration._
-import org.apache.spark.{SparkConf, SparkContext, sql}
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession, functions => sf}
-import org.apache.spark.sql._
-import frameless.functions.{lit, _}
-import frameless.functions.nonAggregate.{when, _}
-import frameless.TypedColumn._
-import frameless.{FramelessSyntax, SparkDelay, TypedColumn, TypedDataset, TypedEncoder}
-import org.apache.spark.sql.expressions.Window
-import io.github.sanojmg.jmetrics.data._
-import io.github.sanojmg.jmetrics.util.CatsUtil._
-import io.github.sanojmg.jmetrics.util.PrintUtil._
-import frameless.cats.implicits._
-import frameless.functions._
-import io.github.sanojmg.jmetrics.config.AppConfig
-import io.github.sanojmg.jmetrics.config.AppEnv
-import io.github.sanojmg.jmetrics.data._
+import scala.concurrent.ExecutionContext.global
+
 import cats._
 import cats.data._
 import cats.implicits._
@@ -24,14 +10,27 @@ import cats.effect.{Concurrent, ContextShift, IO, LiftIO, Sync}
 import cats.effect.{ContextShift, IO, Timer}
 import cats.effect.IO.contextShift
 
-import scala.concurrent.ExecutionContext.global
-import io.github.sanojmg.jmetrics.data.SparkJob.SparkJobs
+import org.apache.spark.sql._
+import org.apache.spark.{SparkConf, SparkContext, sql}
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession, functions => sf}
+import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.types.IntegerType
 
-import io.github.sanojmg.jmetrics.core.Analyzer.{Action, collect}
+import frameless.cats.implicits._
+import frameless.functions._
+import frameless.functions.{lit, _}
+import frameless.functions.nonAggregate.{when, _}
+import frameless.TypedColumn._
+import frameless.{FramelessSyntax, SparkDelay, TypedColumn, TypedDataset, TypedEncoder}
 
+import io.github.sanojmg.jmetrics.types.Common._
+import io.github.sanojmg.jmetrics.config._
+import io.github.sanojmg.jmetrics.data._
+import io.github.sanojmg.jmetrics.util.FramelessUtil._
+import io.github.sanojmg.jmetrics.util.CatsUtil._
+import io.github.sanojmg.jmetrics.util.PrintUtil._
 
-object FramelessAnalyzer {
+object SparkAnalyzer {
 
   def explodeAsTasks[F[_]: Sync]
   (stages: List[SparkStageAttempt]): Action[F, TypedDataset[StageTaskAttr]] = for {
