@@ -1,7 +1,7 @@
 # spark-jmetrics
 A tool to help optimization and troubleshooting of Apache Spark jobs by analysing job metrics
 
-This is implemented as a pure functional scala application using [Cats](https://github.com/typelevel/cats), [Cats Effect (2.X)](https://github.com/typelevel/cats-effect) and [Frameless](https://github.com/typelevel/frameless). 
+This is implemented as a pure functional Scala/Spark application using [Cats](https://github.com/typelevel/cats), [Cats Effect (2.X)](https://github.com/typelevel/cats-effect) and [Frameless](https://github.com/typelevel/frameless). 
 
 ## Usage: 
     Usage: java -jar spark-jmetrics_2.12-0.1.jar --rest-endpoint <url> --app-id <id> [--out-file <file>]
