@@ -40,6 +40,8 @@ object SparkAnalyzer {
     stageAttrDS        = stageDS.select(
                            stageDS('stageId),
                            stageDS('attemptId),
+                           stageDS('name),
+                           stageDS('status),
                            stageDS('numTasks),
                            stageDS('tasks)
                          ).as[SparkStageAttemptAttr]
@@ -49,6 +51,8 @@ object SparkAnalyzer {
     stageTaskAttr      = stageAttrExplDS.selectMany(
                            stageAttrExplDS('stageId),
                            stageAttrExplDS('attemptId),
+                           stageAttrExplDS('stageName),
+                           stageAttrExplDS('stageStatus),
                            stageAttrExplDS('numTasks),
                            stageAttrExplDS.colMany('task, 'taskId),
                            stageAttrExplDS.colMany('task, 'attempt),
@@ -81,8 +85,17 @@ object SparkAnalyzer {
 
       // Caution: No type safety from here
       ds         = taskStDS.dataset
-      windowSpec = Window.partitionBy(ds("stageId"), ds("attemptId"), ds("numTasks"), ds("taskId"))
-                     .orderBy(ds("statusOrder").asc, ds("attempt").desc)
+      windowSpec = Window.partitionBy(
+                     ds("stageId"),
+                     ds("attemptId"),
+                     ds("stageName"),
+                     ds("stageStatus"),
+                     ds("numTasks"),
+                     ds("taskId")
+                   ).orderBy(
+                     ds("statusOrder").asc,
+                     ds("attempt").desc
+                   )
       dsRanked   = ds.withColumn("rnk", sf.row_number().over(windowSpec))
       dsLatest   = dsRanked
                      .filter(dsRanked("rnk") === 1)
@@ -99,7 +112,13 @@ object SparkAnalyzer {
     ds             = attrDS.dataset
 
     // Caution: No type safety from here
-    statDS         = ds.groupBy(ds("stageId"), ds("attemptId"), ds("numTasks")).agg(
+    statDS         = ds.groupBy(
+                       ds("stageId"),
+                       ds("attemptId"),
+                       ds("stageName"),
+                       ds("stageStatus"),
+                       ds("numTasks")
+                     ).agg(
                        sf.avg(ds("duration").divide(1000)).as("avgDuration"),
                        sf.max(ds("duration").divide(1000).cast(IntegerType)).as("maxDuration"),
                        sf.avg(ds("bytesRead")).as("avgBytesRead"),

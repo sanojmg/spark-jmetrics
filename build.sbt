@@ -18,6 +18,7 @@ lazy val root = project.in(file(".")).
     organization := "io.github.sanojmg",
     scalaVersion := "2.12.10",
     version := "0.1",
+    //assembly / mainClass := Some("io.github.sanojmg.jmetrics.MainSparkJmetrics"),
     libraryDependencies ++= Seq(
       "org.typelevel"         %% "frameless-dataset"       % FramelessVersion,
       "org.typelevel"         %% "frameless-cats"          % FramelessVersion,

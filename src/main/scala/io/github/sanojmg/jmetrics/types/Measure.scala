@@ -12,6 +12,7 @@ case class StageSkewMeasure(
                          stageId: Int,
                          stageName: String,
                          attemptId: Int,
+                         stageStatus: String,
                          jobId: List[Int],
                          stageDuration: TimeDuration,
                          taskCount: Int,
@@ -19,8 +20,8 @@ case class StageSkewMeasure(
                          taskAgg: List[TaskAggregate]
                          ) extends Measure {
   override val toString =
-    f"""[Stage Id: ${stageId}, Attempt Id: ${attemptId}, Task Count: ${taskCount}, """ +
-    f"""Skew Ratio: ${skewRatio}] \n${taskAgg.mkString("\n")}"""
+    f"""[Stage Id: ${stageId}, Attempt Id: ${attemptId}, Job Ids: (${jobId.mkString(",")}), Task Count: ${taskCount}]""" +
+    f"""\n[Stage Status: ${stageStatus}, Stage Name: ${stageName}] \n${taskAgg.mkString("\n")}"""
 }
 
 // TaskAggregate: Stage level measures aggregated from task metrics
@@ -28,16 +29,23 @@ sealed trait TaskAggregate
 
 case class DurationAgg(name: DurationAggName,
                         avg: TimeDuration,
-                        max: TimeDuration
+                        max: TimeDuration,
+//                        ratio: Double,
+                        isSkewed: Boolean
                        ) extends TaskAggregate {
-  override val toString = f"\t${name}%-25s => Avg: ${avg}%-17s, Max: ${max}%-17s"
+  override val toString = f"\t${name}%-25s => Avg: ${avg}%-17s, Max: ${max}%-17s," +
+    f"""Ratio: ${max/avg}%.2f${if(isSkewed) " <---" else ""}"""
 }
 
 case class DataSizeAgg(name: DataSizeAggName,
                         avg: StorageSize,
-                        max: StorageSize
+                        max: StorageSize,
+//                        ratio: Double,
+                        isSkewed: Boolean
                       ) extends TaskAggregate {
-  override val toString = f"\t${name}%-25s => Avg: ${avg}%-17s, Max: ${max}%-17s"
+  override val toString = f"\t${name}%-25s => Avg: ${avg}%-17s, Max: ${max}%-17s," +
+    f"""Ratio: ${max/avg}%.2f${if(isSkewed) " <---" else ""}"""
+
 }
 
 // Aggregate based on time durations
@@ -53,8 +61,12 @@ case object ShuffleBytesWritten extends DataSizeAggName {override val toString =
 
 case class TimeDuration(duration: Duration) {
   override val toString = prettyTime(duration).getOrElse("0")
+  def / (that: TimeDuration) =
+    if(that.duration.toSeconds > 0) this.duration / that.duration else this.duration.toSeconds.toDouble
 }
 
 case class StorageSize(size: Long) {
   override val toString = prettyBytes(size)
+  def / (that: StorageSize) =
+    if(that.size > 0) this.size.toDouble / that.size else this.size.toDouble
 }

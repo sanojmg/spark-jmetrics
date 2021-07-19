@@ -20,9 +20,9 @@ object Analyzer {
     stageAttempts    <- SparkStageAttempt.getStages[F](env, stageMap.keys.toList)
     stats            <- generateMetricsForAllStages[F](stageAttempts)
     skewStr          = DataSkewMeasures
-                         .getStageSkewMeasure(stats, env)
+                         .getStageSkewMeasure(stats, env, stageMap)
                          .mkString("\n\n")
-    _                <- printC(Console.RED, s"Data Skew: \n${skewStr}")
+    _                <- printC(Console.BOLD, s"Data Skew: \n${skewStr}")
     _                <- writeToOutFile(skewStr)
     _                <- logA("End: getMetrics")
 
@@ -45,7 +45,7 @@ object Analyzer {
     stgTskAttrUnq     <- SparkAnalyzer.dedupTasks[F](stgTskAttr)(env.sparkSession)
     stats             <- SparkAnalyzer.generateStats[F](stgTskAttrUnq)
     _                 <- logA[F](s"""=======> Task Stats = \n${stats.mkString("\n")}""")
-    _                 <- logA[F](Console.GREEN, s"=======> Getting Stats for All stages...Done")
+    _                 <- logA[F](s"=======> Getting Stats for All stages...Done")
 
   } yield stats
 

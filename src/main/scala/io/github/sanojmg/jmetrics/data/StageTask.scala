@@ -39,6 +39,8 @@ case class StageTask(taskId: Int,
 // Selected task attributes with stage id
 case class StageTaskAttr( stageId: Int,
                           attemptId: Int,
+                          stageName: String,
+                          stageStatus: String,
                           numTasks: Int,
                           taskId: Int,
                           attempt: Int,  // dedup
@@ -54,6 +56,8 @@ case class StageTaskAttr( stageId: Int,
 // Task attributes with statusOrder column (to de-dup multiple task attempts)
 case class StageTaskAttrSt( stageId: Int,
                             attemptId: Int,
+                            stageName: String,
+                            stageStatus: String,
                             numTasks: Int,
                             taskId: Int,
                             attempt: Int,  // dedup
@@ -70,6 +74,8 @@ case class StageTaskAttrSt( stageId: Int,
 // Aggregated Tasks stats for a stage
 case class StageTaskStats(stageId: Int,
                           attemptId: Int,
+                          stageName: String,
+                          stageStatus: String,
                           numTasks: Int,
                           avgDuration: Double,
                           maxDuration: Long,
