@@ -96,13 +96,13 @@ object DataSkewMeasures {
 
   /*
     TODO:
-     Job Name & Duration, Stage Name & Duration
+     --- Job Name & Duration, Stage Name & Duration
      Title - Metrics for tasks per stage: Stage with highest skew in task durations first
      Check: skew() as a measure
      --- Fix: Duration in millis
      --- Pretty time - hh:MM:ss
-     Stage measures - Total number of tasks in a stage - numTasks (completed/failed/killed),
-               Job Ids and names,
+     --- Stage measures - Total number of tasks in a stage - numTasks (completed/failed/killed),
+     ---          Job Ids and names,
                shuffle read, shuffle write, input, output (memory/disk spilled)
      Top 5 Tasks by duration
      Task measures: gc time, shuffle spill - disk & memory, Avg/Max - Ratio, Percentils?
